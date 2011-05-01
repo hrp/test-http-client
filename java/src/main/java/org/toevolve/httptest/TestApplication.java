@@ -32,7 +32,7 @@ public abstract class TestApplication {
 
   static void doTest(String name, String[] args, TestApplication app)
       throws Exception {
-    String command = String.new(args[0]);
+    String command = args[0];
     int iterations = Integer.parseInt(args[1]);
     URL url = new URL(args[2]);
 
@@ -85,7 +85,9 @@ public abstract class TestApplication {
 
   abstract void prepare(URL url) throws Exception;
 
-  abstract void testRequest(URL url) throws Exception;
+  abstract String testRequest(URL url) throws Exception;
+
+  abstract void verifyResponse(String body) throws Exception;
 
   abstract void tearDown() throws Exception;
 }

@@ -30,7 +30,7 @@ public class ApacheHttpClient extends TestApplication {
   }
 
   void verifyResponse(String body) {
-    verifyResult((JSONArray)JSONValue.parse(body);
+    verifyResult((JSONArray)JSONValue.parse(body));
   }
 
   void tearDown() throws Exception {
