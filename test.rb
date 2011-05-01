@@ -39,7 +39,7 @@ at_exit do
   if COMMAND == 'benchmark'
     puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
     puts "  doing #{ITERATIONS} request in each test..."
-    Benchmark.bmbm(20) do |x|
+    Benchmark.bm(20) do |x|
       for name, block in TESTS do
         begin
           x.report("testing #{name}") do
