@@ -1,7 +1,7 @@
 #evm_count = ITERATIONS
 #EventMachine.run do
 #  test_http("em-http") do
-#    http = EventMachine::HttpRequest.new(URL.to_s).get \
+#    http = EventMachine::HttpRequest.new(URL_STRING).get \
 #      :head => {"X-Test" => "test"}, :timeout => 60
 #
 #    http.callback do

@@ -16,6 +16,10 @@ def test_http(name, &block)
 end
 
 URL = URI.parse(PATH)
+URL_HOST = URL.host
+URL_PORT = URL.port
+URL_PATH = URL.path
+URL_STRING = URL.to_s
 
 dir = File.dirname(__FILE__)
 
@@ -26,7 +30,7 @@ end
 at_exit do
   puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
   puts "  doing #{ITERATIONS} request in each test..."
-  Benchmark.bm(20) do |x|
+  Benchmark.bmbm(20) do |x|
     for name, block in TESTS do
       begin
         x.report("testing #{name}") do

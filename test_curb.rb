@@ -1,6 +1,7 @@
 c = Curl::Easy.new
+
 test_http("curb") do
-  c.url = URL.to_s
+  c.url = URL_STRING
   c.headers["X-Test"] = "test"
   c.perform
   data = JSON.parse(c.body_str)

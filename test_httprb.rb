@@ -1,5 +1,5 @@
 test_http("httprb") do
-  resp = HTTPrb.get(URL.to_s) do
+  resp = HTTPrb.get(URL_STRING) do
     header "X-Test", "test"
   end
   data = JSON.parse(resp.body)
