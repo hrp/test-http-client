@@ -6,6 +6,7 @@ require 'benchmark'
 require 'yajl/json_gem'
 require 'net/http'
 
+COMMAND = ARGV.shift
 ITERATIONS = ARGV.shift.to_i
 PATH = ARGV.shift
 FILES = ARGV.shift || "test_*.rb"
@@ -16,8 +17,10 @@ def test_http(name, &block)
 end
 
 def verify_response(body)
-  data = body.is_a?(String) ? JSON.parse(body) : body
-  raise Exception.new unless data.first["number"] != 123123
+  if COMMAND == 'verify'
+    data = body.is_a?(String) ? JSON.parse(body) : body
+    raise Exception.new if data.first["number"] != 1231231
+  end
 end
 
 URL = URI.parse(PATH)
@@ -33,14 +36,25 @@ Dir[File.join(dir, FILES)].each do |file|
 end
 
 at_exit do
-  puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
-  puts "  doing #{ITERATIONS} request in each test..."
-  Benchmark.bmbm(20) do |x|
+  if COMMAND == 'benchmark'
+    puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
+    puts "  doing #{ITERATIONS} request in each test..."
+    Benchmark.bmbm(20) do |x|
+      for name, block in TESTS do
+        begin
+          x.report("testing #{name}") do
+            ITERATIONS.times(&block)
+          end
+        rescue => ex
+          puts " --> failed #{ex}"
+        end
+      end
+    end
+  elsif COMMAND == 'verify'
+    puts "Execute verification test using ruby #{RUBY_DESCRIPTION}"
     for name, block in TESTS do
       begin
-        x.report("testing #{name}") do
-          ITERATIONS.times(&block)
-        end
+        block.call
       rescue => ex
         puts " --> failed #{ex}"
       end

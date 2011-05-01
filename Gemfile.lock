@@ -10,6 +10,7 @@ GEM
     httprb (0.1.5)
     mime-types (1.16)
     patron (0.4.11)
+    rake (0.8.7)
     rest-client (1.6.1)
       mime-types (>= 1.16)
     righttp (0.1.5)
@@ -30,6 +31,7 @@ DEPENDENCIES
   httpclient
   httprb
   patron
+  rake
   rest-client
   righttp
   rufus-jig

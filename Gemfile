@@ -1,5 +1,6 @@
 source :rubygems
 
+gem 'rake'
 gem 'patron'
 gem 'yajl-ruby', :require => 'yajl'
 gem 'righttp'
