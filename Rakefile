@@ -1,9 +1,11 @@
 COUNT  = 10000
-HOST   = "staticjack.s3.amazonaws.com"
-PORT   = 80
-PATH   = "test.json"
-URL    = "http://#{HOST}:#{PORT}/#{PATH}"
+HOST   = "192.168.1.4"
+PORT   = "8082"
+URI    = "test.json"
+URL    = "http://#{HOST}:#{PORT}/#{URI}"
 RESULT = "result.txt"
+
+task :default => :all
 
 task :all => [:clean, :install, :test, :csv]
 
@@ -26,11 +28,11 @@ end
 task :verify do
   system(%Q{rvm 1.9.2,1.8.7 exec ruby test.rb verify 1 #{URL}})
   system(%Q{java -version})
-  system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar 1 #{URL}})
-  system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar 1 #{URL}})
+  system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify 1 #{URL}})
+  system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify 1 #{URL}})
 end
 
-task :test => ['test:ruby', 'test:java', 'test:apache', 'test:httperf']
+task :test => [:clean, 'test:ruby', 'test:java', 'test:apache', 'test:httperf']
 
 namespace :test do
   task :ruby do
@@ -39,8 +41,8 @@ namespace :test do
 
   task :java do
     system(%Q{java -version})
-    system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar #{COUNT} #{URL} >> #{RESULT}})
-    system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar #{COUNT} #{URL} >> #{RESULT}})
+    system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar benchmark #{COUNT} #{URL} >> #{RESULT}})
+    system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar benchmark #{COUNT} #{URL} >> #{RESULT}})
   end
 
   task :apache do
@@ -48,7 +50,7 @@ namespace :test do
   end
 
   task :httperf do
-    system(%Q{time httperf --num-conns=#{COUNT} --num-calls=1 --server=#{HOST} --uri=/#{PATH} >> #{RESULT}})
+    system(%Q{time httperf --num-conns=#{COUNT} --num-calls=1 --server=#{HOST} --port=#{PORT} --uri=/#{URI} >> #{RESULT}})
   end
 end
 
