@@ -15,6 +15,11 @@ def test_http(name, &block)
   TESTS << [name, block]
 end
 
+def verify_response(body)
+  data = body.is_a?(String) ? JSON.parse(body) : body
+  raise Exception.new unless data.first["number"] != 123123
+end
+
 URL = URI.parse(PATH)
 URL_HOST = URL.host
 URL_PORT = URL.port

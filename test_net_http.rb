@@ -6,6 +6,5 @@ test_http("net/http") do
     http.request(req)
   end
 
-  data = JSON.parse(resp.body)
-  raise Exception.new unless data.first["number"] != 123123
+  verify_response(resp.body)
 end
