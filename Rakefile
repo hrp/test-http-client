@@ -1,6 +1,6 @@
 COUNT  = 10000
-HOST   = "192.168.1.4"
-PORT   = "8082"
+HOST   = "192.168.1.2"
+PORT   = "80"
 URI    = "test.json"
 URL    = "http://#{HOST}:#{PORT}/#{URI}"
 RESULT = "result.txt"
@@ -26,10 +26,10 @@ namespace :install do
 end
 
 task :verify do
-  system(%Q{rvm 1.9.2,1.8.7 exec ruby test.rb verify 1 #{URL}})
+  system(%Q{rvm 1.9.2,1.8.7 exec ruby test.rb verify #{URL}})
   system(%Q{java -version})
-  system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify 1 #{URL}})
-  system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify 1 #{URL}})
+  system(%Q{java -server -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify #{URL}})
+  system(%Q{java -jar java/target/http-test-0.0.1-SNAPSHOT.jar verify #{URL}})
 end
 
 task :test => [:clean, 'test:ruby', 'test:java', 'test:apache', 'test:httperf']
@@ -37,7 +37,7 @@ task :test => [:clean, 'test:ruby', 'test:java', 'test:apache', 'test:httperf']
 namespace :test do
   task :ruby do
     system(%Q{rvm 1.9.2,1.8.7 exec ruby test.rb benchmark #{COUNT} #{URL} >> #{RESULT}})
-  end
+    end
 
   task :java do
     system(%Q{java -version})
