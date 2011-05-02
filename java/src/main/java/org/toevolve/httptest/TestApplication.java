@@ -33,8 +33,14 @@ public abstract class TestApplication {
   static void doTest(String name, String[] args, TestApplication app)
       throws Exception {
     String command = args[0];
-    int iterations = Integer.parseInt(args[1]);
-    URL url = new URL(args[2]);
+    int iterations = 1;
+    URL url = null;
+    if (command.equals("benchmark")) {
+      iterations = Integer.parseInt(args[1]);
+      url = new URL(args[2]);
+    } else {
+      url = new URL(args[1]);
+    }
 
     // start time
     long sTime = System.currentTimeMillis();
