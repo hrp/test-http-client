@@ -17,6 +17,12 @@ TESTS = []
 # thread. More than 1, well, you see how it goes. 
 CONCURRENCY = (ENV['CONCURRENCY'] || 0).to_i
 
+# If PER_THREAD is more than 1, then we still do
+# CONCURRENCY simultaneous threads, but in each thread
+# we actually do PER_THREAD requests, rather than one
+# request per-thread.
+PER_THREAD = (ENV['PER_THREAD'] || 1).to_i
+
 # Any tests to skip?
 SKIP = (ENV['SKIP'] || "").split(",")
 
@@ -38,12 +44,12 @@ at_exit do
   outer_loop_iterations = if CONCURRENCY == 0
      ITERATIONS
    else
-     ITERATIONS / CONCURRENCY
+     ITERATIONS / (CONCURRENCY * PER_THREAD)
    end
  
   
   puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
-  puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}) in each test..."
+  puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{PER_THREAD} requests per-thread) in each test..."
   Benchmark.bm(28) do |x|
     for name, block in TESTS do
       begin
@@ -55,7 +61,7 @@ at_exit do
               threads = []
               CONCURRENCY.times do
                 threads << Thread.new do
-                  block.call
+                  PER_THREAD.times { block.call  }                  
                 end
               end
               threads.each {|t| t.join}
