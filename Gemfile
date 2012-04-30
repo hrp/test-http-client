@@ -1,6 +1,7 @@
 source :rubygems
 
-gem 'patron'
+# can't get patron to compile, sorry
+#gem 'patron'
 gem 'yajl-ruby', :require => 'yajl'
 gem 'righttp'
 gem 'rest-client', :require => 'restclient'
