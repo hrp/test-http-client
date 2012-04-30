@@ -11,3 +11,5 @@ gem 'httparty'
 gem 'curb'
 gem 'rufus-jig', :require => 'rufus/jig'
 gem 'eventmachine'
+gem 'net-http-persistent'
+

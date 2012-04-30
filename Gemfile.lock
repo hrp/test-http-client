@@ -9,6 +9,7 @@ GEM
     httpclient (2.1.6.1)
     httprb (0.1.5)
     mime-types (1.16)
+    net-http-persistent (2.6)
     rest-client (1.6.1)
       mime-types (>= 1.16)
     righttp (0.1.5)
@@ -28,6 +29,7 @@ DEPENDENCIES
   httparty
   httpclient
   httprb
+  net-http-persistent
   rest-client
   righttp
   rufus-jig
