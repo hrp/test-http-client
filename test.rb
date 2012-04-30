@@ -26,7 +26,7 @@ end
 at_exit do
   puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
   puts "  doing #{ITERATIONS} request in each test..."
-  Benchmark.bm(20) do |x|
+  Benchmark.bm(28) do |x|
     for name, block in TESTS do
       begin
         x.report("testing #{name}") do
