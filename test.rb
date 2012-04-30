@@ -49,7 +49,7 @@ at_exit do
  
   
   puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
-  puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD + " requests per-thread" if CONCURRENCY > 0}) in each test..."
+  puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
   Benchmark.bm(28) do |x|
     for name, block in TESTS do
       begin
