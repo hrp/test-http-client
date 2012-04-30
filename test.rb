@@ -17,6 +17,10 @@ TESTS = []
 # thread. More than 1, well, you see how it goes. 
 CONCURRENCY = (ENV['CONCURRENCY'] || 0).to_i
 
+# Any tests to skip?
+SKIP = (ENV['SKIP'] || "").split(",")
+
+
 def test_http(name, &block)
   TESTS << [name, block]
 end
@@ -26,6 +30,7 @@ URL = URI.parse(PATH)
 dir = File.dirname(__FILE__)
 
 Dir[File.join(dir, FILES)].each do |file|
+  next if SKIP.find {|skip_it| file.end_with? skip_it }
   require file
 end
 
