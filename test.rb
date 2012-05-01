@@ -59,7 +59,7 @@ at_exit do
               block.call
             else
               threads = []
-              threads << CONCURRENCY.times do
+              CONCURRENCY.times do
                 threads << Thread.new do
                   PER_THREAD.times { block.call  }                  
                 end
