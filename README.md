@@ -6,7 +6,7 @@ jrochkind's fork of threez's original:
 * added net-http-persistent test
 * fixed httpclient test to not init in inner loop
 * i personally don't use the java tests and apache bench tests you get from `make`.
-  I don't think I've broken em. But I just test with `bundle install` and `ruby test.rb` under ruby 1.8.7
+  I don't think I've broken em. But I just test with `bundle install` and `ruby test.rb` under ruby 1.9.3
 * I added some features to `test.rb` for multi-threaded testing: set in env variables `CONCURRENCY=n` and `PER_THREAD=m`.
   As well as a env SKIP=comma-seperated test file names. 
 
