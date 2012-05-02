@@ -1,4 +1,4 @@
-= fork
+# fork
 
 jrochkind's fork of threez's original:
 
@@ -12,7 +12,7 @@ jrochkind's fork of threez's original:
 
 See http://bibwild.wordpress.com/2012/04/30/ruby-http-performance-shootout-redux/
 
-= Original README
+# Original README
 When you deal with a lot *HTTP* requests in your application, you want to have them as fast and light as possible. Also one want to take advantage of the *HTTP* keep alive functionality to reduce the number of reconnects to the hosting server if possible. Gzipping and other techniques are very welcome also. All this is especially interesting if your infrastructure is relying on this http communication heavily. *HTTP* is very good in providing a stable and flexibel solution, but sometimes suffers from the performance of native protocols.
 
 The project I'm currently working on involves a lot of internal http communication. Therefore I wanted to have a look on the http client performance.
