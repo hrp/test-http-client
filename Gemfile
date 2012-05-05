@@ -2,7 +2,8 @@ source :rubygems
 
 # can't get patron to compile, sorry
 gem 'patron'
-gem 'yajl-ruby', :require => 'yajl'
+gem 'multi_json'
+gem 'oj'
 gem 'righttp'
 gem 'rest-client', :require => 'restclient'
 gem 'httprb'

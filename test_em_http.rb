@@ -5,7 +5,7 @@
 #      :head => {"X-Test" => "test"}, :timeout => 60
 #
 #    http.callback do
-#      data = JSON.parse(http.response)
+#      data = MultiJson.load(http.response)
 #      raise Exception.new unless data.first["number"] != 123123
 #      evm_count -= 1
 #      EventMachine.stop if evm_count <= 0

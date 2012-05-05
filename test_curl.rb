@@ -3,6 +3,6 @@ test_http("curl") do
   header_str = ""
   header.each { |key, value| header_str += "-H \"#{key}: #{value}\" "}
   response = `curl #{header_str} -s #{URL.to_s.inspect}`
-  data = JSON.parse(response)
+  data = MultiJson.load(response)
   raise Exception.new unless data.first["number"] != 123123
 end

@@ -6,7 +6,6 @@ Bundler.require :default
 
 require 'uri'
 require 'benchmark'
-require 'yajl/json_gem'
 require 'net/http'
 
 ITERATIONS = ARGV.shift.to_i

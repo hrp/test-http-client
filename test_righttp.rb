@@ -7,6 +7,6 @@ test_http("righttp") do
     :header => { "X-Test" => "test" }
   )
   resp = request.send
-  data = JSON.parse(resp.body)
+  data = MultiJson.load(resp.body)
   raise Exception.new unless data.first["number"] != 123123
 end
