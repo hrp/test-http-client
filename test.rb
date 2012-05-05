@@ -1,6 +1,9 @@
+#!/usr/bin/env ruby
+
 require 'rubygems'
-require 'bundler'
+require 'bundler/setup'
 Bundler.require :default
+
 require 'uri'
 require 'benchmark'
 require 'yajl/json_gem'
@@ -14,7 +17,7 @@ TESTS = []
 # Will do CONCURRENCY requests concurrently in
 # in ruby threads. If 0, all tests done in main
 # thread. If 1, only one at a time, but in seperate
-# thread. More than 1, well, you see how it goes. 
+# thread. More than 1, well, you see how it goes.
 CONCURRENCY = (ENV['CONCURRENCY'] || 0).to_i
 
 # If PER_THREAD is more than 1, then we still do
@@ -46,8 +49,8 @@ at_exit do
    else
      ITERATIONS / (CONCURRENCY * PER_THREAD)
    end
- 
-  
+
+
   puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
   puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
   Benchmark.bm(28) do |x|
@@ -61,7 +64,7 @@ at_exit do
               threads = []
               CONCURRENCY.times do
                 threads << Thread.new do
-                  PER_THREAD.times { block.call  }                  
+                  PER_THREAD.times { block.call  }
                 end
               end
               threads.each {|t| t.join}
