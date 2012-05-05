@@ -10,6 +10,8 @@ require 'oj'
 require 'multi_json'
 require 'yajl'
 
+require "eventmachine"
+
 COMMAND = ARGV.shift
 ITERATIONS = (COMMAND == 'benchmark') ? ARGV.shift.to_i : 0
 PATH = ARGV.shift
@@ -37,14 +39,15 @@ def test_http(name, clazz)
 end
 
 class BaseTest
+  attr_reader :errs
   def initialize
     @headers = {"X-Test" => "test"}
+    @errs = 0
   end
   def verify_response(body)
-    if COMMAND == 'verify'
-      data = body.is_a?(String) ? MultiJson.load(body) : body
-      raise Exception.new('response body is not valid') if data.first["numbers"] != 123123
-    end
+    return if COMMAND != 'verify'
+    data = body.is_a?(String) ? MultiJson.load(body) : body
+    raise Exception.new('response body is not valid') if data.first["numbers"] != 123123
   end
 end
 
@@ -78,27 +81,37 @@ at_exit do
         fork do
 
           test = clazz.new
-          begin
 
-            x.report("testing #{name}") do
-              outer_loop_iterations.times do
-                if CONCURRENCY == 0
-                  test.bench()
-                else
-                  threads = []
-                  CONCURRENCY.times do
-                    threads << Thread.new do
-                      PER_THREAD.times { block.call  }
+            begin
+
+              x.report("testing #{name}") do
+                EM.run do
+
+                  outer_loop_iterations.times do
+                    if CONCURRENCY == 0
+                      test.bench()
+                    else
+                      threads = []
+                      CONCURRENCY.times do
+                        threads << Thread.new do
+                          PER_THREAD.times { test.bench() }
+                        end
+                      end
+                      threads.each {|t| t.join}
                     end
                   end
-                  threads.each {|t| t.join}
-                end
-              end
+
+                  EM.stop if name !~ /^em/
+                end # EM.run
+              end # report
+
+              puts "   #{test.errs} requests failed" if test.errs > 0
+
+            rescue Exception => ex
+              puts " --> failed #{ex}"
+              puts ex.backtrace if ex.message !~ /requests failed/
             end
 
-          rescue Exception => ex
-            puts " --> failed #{ex}"
-          end
 
         end # fork
         Process.wait
@@ -111,13 +124,19 @@ at_exit do
     for name, clazz in TESTS do
       print name
       fork do
-        test = clazz.new
-        begin
-          test.bench()
-          puts " --> passed "
-        rescue Exception => ex
-          puts " --> failed #{ex}"
-          puts ex.backtrace
+        EM.run do
+          test = clazz.new
+          begin
+            test.bench()
+            if test.errs > 0 then
+              raise Exception.new("(#{test.errs} requests failed)")
+            end
+            puts " --> passed "
+          rescue Exception => ex
+            puts " --> failed #{ex}"
+            puts ex.backtrace if ex.message !~ /requests failed/
+          end
+          EM.stop if name !~ /^em/
         end
       end # fork
       Process.wait

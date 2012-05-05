@@ -1,20 +1,24 @@
 
+# warning: test will launch 'ITERATIONS' concurrent requests due to the nature
+# of em-http-request. EM.HttpRequest.new automatically opens the connection
+
 class TestEmHttp < BaseTest
   def initialize
     super
     require "eventmachine"
     require "em-http-request"
     @evm_count = ITERATIONS
-    @thread = Thread.new { EventMachine.run }
-    loop do
-      break if EventMachine.reactor_running?
-    end
   end
   def bench
-    http = EventMachine::HttpRequest.new(URL.to_s).get \
+    http = EventMachine::HttpRequest.new(PATH).get(
       :head => @headers, :timeout => 60
+    )
 
-    http.errback { EM.stop; raise Exception.new }
+    http.errback {
+      @errs += 1
+      @evm_count -= 1
+      EM.stop if @evm_count <= 0
+    }
 
     http.callback do
       verify_response(http.response)
