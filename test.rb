@@ -22,13 +22,8 @@ TESTS = []
 # in ruby threads. If 0, all tests done in main
 # thread. If 1, only one at a time, but in seperate
 # thread. More than 1, well, you see how it goes.
-CONCURRENCY = (ENV['CONCURRENCY'] || 0).to_i
+CONCURRENCY = (ENV['CONCURRENCY'] || 1).to_i
 
-# If PER_THREAD is more than 1, then we still do
-# CONCURRENCY simultaneous threads, but in each thread
-# we actually do PER_THREAD requests, rather than one
-# request per-thread.
-PER_THREAD = (ENV['PER_THREAD'] || 1).to_i
 
 # Any tests to skip?
 SKIP = (ENV['SKIP'] || "").split(",")
@@ -43,6 +38,9 @@ class BaseTest
   def initialize
     @headers = {"X-Test" => "test"}
     @errs = 0
+  end
+  def thread_safe?
+    true
   end
   def verify_response(body)
     return if COMMAND != 'verify'
@@ -66,45 +64,60 @@ end
 
 at_exit do
 
-  outer_loop_iterations = if CONCURRENCY == 0
-    ITERATIONS
-  else
-    ITERATIONS / (CONCURRENCY * PER_THREAD)
-  end
-
   if COMMAND == 'benchmark' then
 
+    num_threads = CONCURRENCY
+    per_thread = ITERATIONS / CONCURRENCY
+    total = per_thread * CONCURRENCY
+
     puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
-    puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
+    puts "  doing #{total} requests" + ( num_threads > 0 ? " (#{num_threads} threads of #{per_thread} each)" : "" )
+
     Benchmark.bm(28) do |x|
       for name, clazz in TESTS do
         fork do
-          test = clazz.new
-            begin
-              x.report("testing #{name}") do
-                outer_loop_iterations.times do
-                  if CONCURRENCY == 0
-                    test.bench()
-                  else
-                    threads = []
-                    CONCURRENCY.times do
-                      threads << Thread.new do
-                        PER_THREAD.times { test.bench() }
-                      end
-                    end
-                    threads.each {|t| t.join}
-                  end
+          clazz.new # make sure files are required early before threading
+          begin
+            errs = 0
+            x.report("testing #{name}") do
+
+              if not clazz.new.thread_safe? then
+                num_threads = 1
+                per_thread = ITERATIONS
+                total = ITERATIONS
+
+              else
+                num_threads = CONCURRENCY
+                per_thread = ITERATIONS / CONCURRENCY
+                total = per_thread * CONCURRENCY
+              end
+
+              threads = []
+              num_threads.times do
+                t = Thread.new do
+                  test = clazz.new
+                  per_thread.times { test.bench(); }
+                  errs += test.errs
                 end
-              end # report
+                threads << t
+              end
+              threads.each {|t| t.join}
 
-              puts "   #{test.errs} requests failed" if test.errs > 0
+            end # report
 
-            rescue Exception => ex
-              puts " --> failed #{ex}"
-              puts ex.backtrace if ex.message !~ /requests failed/
+            if not clazz.new.thread_safe? then
+              puts "   NOTE: #{name} is not thread safe, only 1 thread used"
             end
+
+            puts "   #{errs} requests failed" if errs > 0
+
+          rescue Exception => ex
+            puts " --> failed #{ex}"
+            puts ex.backtrace if ex.message !~ /requests failed/
+          end
         end # fork
         Process.wait
+
       end
     end
 
