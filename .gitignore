@@ -3,3 +3,4 @@ java/.project
 java/.settings/org.eclipse.jdt.core.prefs
 java/.settings/org.maven.ide.eclipse.prefs
 java/target
+test.json
