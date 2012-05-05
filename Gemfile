@@ -4,6 +4,7 @@ source :rubygems
 gem 'patron'
 gem 'multi_json'
 gem 'oj'
+gem 'yajl-ruby', :require => 'yajl'
 gem 'righttp'
 gem 'rest-client', :require => 'restclient'
 gem 'httprb'

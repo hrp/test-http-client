@@ -33,6 +33,7 @@ GEM
       rufus-lru
     rufus-json (1.0.1)
     rufus-lru (1.0.5)
+    yajl-ruby (1.1.0)
 
 PLATFORMS
   ruby
@@ -51,3 +52,4 @@ DEPENDENCIES
   rest-client
   righttp
   rufus-jig
+  yajl-ruby
