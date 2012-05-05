@@ -7,78 +7,93 @@ import org.json.simple.JSONObject;
 import java.lang.management.*;
 
 public abstract class TestApplication {
-	/** code from http://nadeausoftware.com/articles/2008/03/java_tip_how_get_cpu_and_user_time_benchmarking **/
-	
-	/** Get CPU time in nanoseconds. */
-	static public long getCpuTime( ) {
-	    ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
-	    return bean.isCurrentThreadCpuTimeSupported( ) ?
-	        bean.getCurrentThreadCpuTime( ) : 0L;
-	}
-	 
-	/** Get user time in nanoseconds. */
-	static public long getUserTime( ) {
-	    ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
-	    return bean.isCurrentThreadCpuTimeSupported( ) ?
-	        bean.getCurrentThreadUserTime( ) : 0L;
-	}
+  /** code from http://nadeausoftware.com/articles/2008/03/java_tip_how_get_cpu_and_user_time_benchmarking **/
 
-	/** Get system time in nanoseconds. */
-	static public long getSystemTime( ) {
-	    ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
-	    return bean.isCurrentThreadCpuTimeSupported( ) ?
-	        (bean.getCurrentThreadCpuTime() - bean.getCurrentThreadUserTime( )) : 0L;
-	}
-	
-	static void doTest(String name, String[] args, TestApplication app)
-			throws Exception {
-		int iterations = Integer.parseInt(args[0]);
-		URL url = new URL(args[1]);
+  /** Get CPU time in nanoseconds. */
+  static public long getCpuTime( ) {
+      ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+      return bean.isCurrentThreadCpuTimeSupported( ) ?
+          bean.getCurrentThreadCpuTime( ) : 0L;
+  }
 
-		// start time
-		long sTime = System.currentTimeMillis();
-		long startSystemTimeNano = getSystemTime();
-		long startUserTimeNano   = getUserTime();
-		
-		app.prepare(url);
-		// do the test
-		for (int i = 0; i < iterations; ++i) {
-			app.testRequest(url);
-		}
-		app.tearDown();
-		
-		// end time
-		long taskUserTimeNano    = getUserTime() - startUserTimeNano;
-		long taskSystemTimeNano  = getSystemTime() - startSystemTimeNano;
-		long eTime = System.currentTimeMillis();
-		
-		double userSec = (taskUserTimeNano - startSystemTimeNano) / (1000.0 * 1000.0 * 1000.0);
-		double systemSec = (taskSystemTimeNano - startSystemTimeNano) / (1000.0 * 1000.0 * 1000.0);
-		double totalSec = userSec + systemSec;
-		double realSec = (eTime - sTime) / 1000.0;
-		
-		// print the results
-		System.out.println("Time for " + iterations + " requests to " + url + ":");		
-		System.out.println("                          user     system      total        real");
-		System.out.println(String.format("%-19s %10.6f %10.6f %10.6f (%10.6f)", new Object[] {
-				name, new Double(userSec), new Double(systemSec), 
-				new Double(totalSec), new Double(realSec)
-		}));
-	}
+  /** Get user time in nanoseconds. */
+  static public long getUserTime( ) {
+      ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+      return bean.isCurrentThreadCpuTimeSupported( ) ?
+          bean.getCurrentThreadUserTime( ) : 0L;
+  }
 
-	void verifyResult(JSONArray array) {
-		JSONObject firstObject = (JSONObject)array.get(0);
-		long value = ((Long)firstObject.get("numbers")).longValue();
-		
-		
-		if (value != 123123) {
-			throw new RuntimeException("expected 123123 as number, something is wrong");
-		}
-	}
+  /** Get system time in nanoseconds. */
+  static public long getSystemTime( ) {
+      ThreadMXBean bean = ManagementFactory.getThreadMXBean( );
+      return bean.isCurrentThreadCpuTimeSupported( ) ?
+          (bean.getCurrentThreadCpuTime() - bean.getCurrentThreadUserTime( )) : 0L;
+  }
+
+  static void doTest(String name, String[] args, TestApplication app)
+      throws Exception {
+    String command = args[0];
+    int iterations = 1;
+    URL url = null;
+    if (command.equals("benchmark")) {
+      iterations = Integer.parseInt(args[1]);
+      url = new URL(args[2]);
+    } else {
+      url = new URL(args[1]);
+    }
+
+    // start time
+    long sTime = System.currentTimeMillis();
+    long startSystemTimeNano = getSystemTime();
+    long startUserTimeNano   = getUserTime();
+
+    app.prepare(url);
+    // do the test
+    String resp = "";
+    for (int i = 0; i < iterations; ++i) {
+      resp = app.testRequest(url);
+    }
+
+    // verify
+    if (command.equals("verify")) {
+      app.verifyResponse(resp);
+    }
+    app.tearDown();
+
+    // end time
+    long taskUserTimeNano    = getUserTime() - startUserTimeNano;
+    long taskSystemTimeNano  = getSystemTime() - startSystemTimeNano;
+    long eTime = System.currentTimeMillis();
+
+    double userSec = (taskUserTimeNano - startSystemTimeNano) / (1000.0 * 1000.0 * 1000.0);
+    double systemSec = (taskSystemTimeNano - startSystemTimeNano) / (1000.0 * 1000.0 * 1000.0);
+    double totalSec = userSec + systemSec;
+    double realSec = (eTime - sTime) / 1000.0;
+
+    // print the results
+    System.out.println("Time for " + iterations + " requests to " + url + ":");
+    System.out.println("                          user     system      total        real");
+    System.out.println(String.format("%-19s %10.6f %10.6f %10.6f (%10.6f)", new Object[] {
+        name, new Double(userSec), new Double(systemSec),
+        new Double(totalSec), new Double(realSec)
+    }));
+  }
+
+  void verifyResult(JSONArray array) {
+    JSONObject firstObject = (JSONObject)array.get(0);
+    long value = ((Long)firstObject.get("numbers")).longValue();
+
+
+    if (value != 123123) {
+      throw new RuntimeException("expected 123123 as number, something is wrong");
+    }
+  }
 
   abstract void prepare(URL url) throws Exception;
 
-	abstract void testRequest(URL url) throws Exception;
-	
-	abstract void tearDown() throws Exception;
+  abstract String testRequest(URL url) throws Exception;
+
+  abstract void verifyResponse(String body) throws Exception;
+
+  abstract void tearDown() throws Exception;
 }

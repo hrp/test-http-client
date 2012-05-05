@@ -9,11 +9,9 @@ test_http("em-http") do
    http.errback { EM.stop; raise Exception.new }
 
    http.callback do
-     data = MultiJson.load(http.response)
-     raise Exception.new unless data.first["number"] != 123123
+     verify_response(http.response)
      evm_count -= 1
      EM.stop if evm_count <= 0
    end
 
 end
-

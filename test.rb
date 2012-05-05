@@ -8,7 +8,8 @@ require 'uri'
 require 'benchmark'
 require 'net/http'
 
-ITERATIONS = ARGV.shift.to_i
+COMMAND = ARGV.shift
+ITERATIONS = (COMMAND == 'benchmark') ? ARGV.shift.to_i : 0
 PATH = ARGV.shift
 FILES = ARGV.shift || "test_*.rb"
 TESTS = []
@@ -33,7 +34,18 @@ def test_http(name, &block)
   TESTS << [name, block]
 end
 
+def verify_response(body)
+  if COMMAND == 'verify'
+    data = body.is_a?(String) ? MultiJson.load(body) : body
+    raise Exception.new('response body is not valid') if data.first["numbers"] != 123123
+  end
+end
+
 URL = URI.parse(PATH)
+URL_HOST = URL.host
+URL_PORT = URL.port
+URL_PATH = URL.path
+URL_STRING = URL.to_s
 
 dir = File.dirname(__FILE__)
 
@@ -43,36 +55,54 @@ Dir[File.join(dir, FILES)].each do |file|
 end
 
 at_exit do
+
   outer_loop_iterations = if CONCURRENCY == 0
-     ITERATIONS
-   else
-     ITERATIONS / (CONCURRENCY * PER_THREAD)
-   end
+    ITERATIONS
+  else
+    ITERATIONS / (CONCURRENCY * PER_THREAD)
+  end
 
-
-  puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
-  puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
-  Benchmark.bm(28) do |x|
-    for name, block in TESTS do
-      begin
-        x.report("testing #{name}") do
-          outer_loop_iterations.times do
-            if CONCURRENCY == 0
-              block.call
-            else
-              threads = []
-              CONCURRENCY.times do
-                threads << Thread.new do
-                  PER_THREAD.times { block.call  }
+  if COMMAND == 'benchmark' then
+    puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
+    puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
+    Benchmark.bm(28) do |x|
+      for name, block in TESTS do
+        begin
+          x.report("testing #{name}") do
+            outer_loop_iterations.times do
+              if CONCURRENCY == 0
+                block.call
+              else
+                threads = []
+                CONCURRENCY.times do
+                  threads << Thread.new do
+                    PER_THREAD.times { block.call  }
+                  end
                 end
+                threads.each {|t| t.join}
               end
-              threads.each {|t| t.join}
             end
           end
         end
-      rescue => ex
-        puts " --> failed #{ex}"
       end
     end
+
+  elsif COMMAND == 'verify' then
+
+    puts "Execute verification test using ruby #{RUBY_DESCRIPTION}"
+    for name, block in TESTS do
+      print name
+      EventMachine.run do
+        begin
+          block.call
+          puts " --> passed "
+        rescue Exception => ex
+          puts " --> failed #{ex}"
+        end
+        EventMachine.stop
+      end
+    end
+
   end
+
 end
