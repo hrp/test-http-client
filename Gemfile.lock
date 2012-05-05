@@ -1,24 +1,27 @@
 GEM
   remote: http://rubygems.org/
   specs:
-    crack (0.1.8)
-    curb (0.7.12)
+    curb (0.8.0)
     eventmachine (0.12.10)
-    httparty (0.7.4)
-      crack (= 0.1.8)
-    httpclient (2.1.6.1)
+    httparty (0.8.3)
+      multi_json (~> 1.0)
+      multi_xml
+    httpclient (2.2.4)
     httprb (0.1.5)
-    mime-types (1.16)
+    mime-types (1.18)
+    multi_json (1.3.4)
+    multi_xml (0.4.4)
     net-http-persistent (2.6)
-    rest-client (1.6.1)
+    patron (0.4.18)
+    rest-client (1.6.7)
       mime-types (>= 1.16)
     righttp (0.1.5)
     rufus-jig (1.0.0)
       rufus-json (>= 0.2.5)
       rufus-lru
-    rufus-json (0.2.5)
-    rufus-lru (1.0.3)
-    yajl-ruby (0.8.1)
+    rufus-json (1.0.1)
+    rufus-lru (1.0.5)
+    yajl-ruby (1.1.0)
 
 PLATFORMS
   ruby
@@ -30,6 +33,7 @@ DEPENDENCIES
   httpclient
   httprb
   net-http-persistent
+  patron
   rest-client
   righttp
   rufus-jig

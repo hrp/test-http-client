@@ -1,7 +1,7 @@
 source :rubygems
 
 # can't get patron to compile, sorry
-#gem 'patron'
+gem 'patron'
 gem 'yajl-ruby', :require => 'yajl'
 gem 'righttp'
 gem 'rest-client', :require => 'restclient'
@@ -11,5 +11,5 @@ gem 'httparty'
 gem 'curb'
 gem 'rufus-jig', :require => 'rufus/jig'
 gem 'eventmachine'
-gem 'net-http-persistent'
+gem 'net-http-persistent', :require => 'net/http/persistent'
 
