@@ -1,7 +1,13 @@
-# can't get patron to compile, sorry
-sess = Patron::Session.new
 
-test_http("patron") do
-  resp = sess.get(URL_STRING, {"X-Test" => "test"})
-  verify_response(resp.body)
+class TestPatron < BaseTest
+  def initialize
+    require "patron"
+    @sess = Patron::Session.new
+  end
+  def bench
+    resp = @sess.get(URL_STRING, {"X-Test" => "test"})
+    verify_response(resp.body)
+  end
 end
+
+test_http("patron", TestPatron)

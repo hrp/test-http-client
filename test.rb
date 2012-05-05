@@ -1,13 +1,14 @@
 #!/usr/bin/env ruby
 
 require 'rubygems'
-require 'bundler/setup'
-Bundler.require :default
-
+require 'bundler'
 require 'uri'
 require 'benchmark'
 require 'net/http'
 
+require 'oj'
+require 'multi_json'
+require 'yajl'
 
 COMMAND = ARGV.shift
 ITERATIONS = (COMMAND == 'benchmark') ? ARGV.shift.to_i : 0
@@ -31,14 +32,16 @@ PER_THREAD = (ENV['PER_THREAD'] || 1).to_i
 SKIP = (ENV['SKIP'] || "").split(",")
 
 
-def test_http(name, &block)
-  TESTS << [name, block]
+def test_http(name, clazz)
+  TESTS << [name, clazz]
 end
 
-def verify_response(body)
-  if COMMAND == 'verify'
-    data = body.is_a?(String) ? MultiJson.load(body) : body
-    raise Exception.new('response body is not valid') if data.first["numbers"] != 123123
+class BaseTest
+  def verify_response(body)
+    if COMMAND == 'verify'
+      data = body.is_a?(String) ? MultiJson.load(body) : body
+      raise Exception.new('response body is not valid') if data.first["numbers"] != 123123
+    end
   end
 end
 
@@ -64,15 +67,19 @@ at_exit do
   end
 
   if COMMAND == 'benchmark' then
+
     puts "Execute http performance test using ruby #{RUBY_DESCRIPTION}"
     puts "  doing #{ITERATIONS} requests (#{outer_loop_iterations} iterations with concurrency of #{CONCURRENCY}, #{ PER_THREAD.to_s + " requests per-thread" if CONCURRENCY > 0}) in each test..."
     Benchmark.bm(28) do |x|
-      for name, block in TESTS do
-        begin
+      for name, clazz in TESTS do
+        fork do
+
+          test = clazz.new
+
           x.report("testing #{name}") do
             outer_loop_iterations.times do
               if CONCURRENCY == 0
-                block.call
+                test.bench()
               else
                 threads = []
                 CONCURRENCY.times do
@@ -84,25 +91,28 @@ at_exit do
               end
             end
           end
-        end
+
+        end # fork
+        Process.wait
       end
     end
 
   elsif COMMAND == 'verify' then
 
     puts "Execute verification test using ruby #{RUBY_DESCRIPTION}"
-    for name, block in TESTS do
+    for name, clazz in TESTS do
       print name
-      EventMachine.run do
+      fork do
+        test = clazz.new
         begin
-          block.call
+          test.bench()
           puts " --> passed "
         rescue Exception => ex
           puts " --> failed #{ex}"
           puts ex.backtrace
         end
-        EventMachine.stop
-      end
+      end # fork
+      Process.wait
     end
 
   end
