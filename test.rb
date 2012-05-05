@@ -8,6 +8,7 @@ require 'uri'
 require 'benchmark'
 require 'net/http'
 
+
 COMMAND = ARGV.shift
 ITERATIONS = (COMMAND == 'benchmark') ? ARGV.shift.to_i : 0
 PATH = ARGV.shift
@@ -98,6 +99,7 @@ at_exit do
           puts " --> passed "
         rescue Exception => ex
           puts " --> failed #{ex}"
+          puts ex.backtrace
         end
         EventMachine.stop
       end
