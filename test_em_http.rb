@@ -10,20 +10,22 @@ class TestEmHttp < BaseTest
     @evm_count = ITERATIONS
   end
   def bench
-    http = EventMachine::HttpRequest.new(PATH).get(
-      :head => @headers, :timeout => 60
-    )
+    EM.run do
+      http = EventMachine::HttpRequest.new(PATH).get(
+        :head => @headers, :timeout => 60
+      )
 
-    http.errback {
-      @errs += 1
-      @evm_count -= 1
-      EM.stop if @evm_count <= 0
-    }
+      http.errback {
+        @errs += 1
+        @evm_count -= 1
+        EM.stop
+      }
 
-    http.callback do
-      verify_response(http.response)
-      @evm_count -= 1
-      EM.stop if @evm_count <= 0
+      http.callback do
+        verify_response(http.response)
+        @evm_count -= 1
+        EM.stop
+      end
     end
   end
 end

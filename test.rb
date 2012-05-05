@@ -79,30 +79,22 @@ at_exit do
     Benchmark.bm(28) do |x|
       for name, clazz in TESTS do
         fork do
-
           test = clazz.new
-
             begin
-
               x.report("testing #{name}") do
-                EM.run do
-
-                  outer_loop_iterations.times do
-                    if CONCURRENCY == 0
-                      test.bench()
-                    else
-                      threads = []
-                      CONCURRENCY.times do
-                        threads << Thread.new do
-                          PER_THREAD.times { test.bench() }
-                        end
+                outer_loop_iterations.times do
+                  if CONCURRENCY == 0
+                    test.bench()
+                  else
+                    threads = []
+                    CONCURRENCY.times do
+                      threads << Thread.new do
+                        PER_THREAD.times { test.bench() }
                       end
-                      threads.each {|t| t.join}
                     end
+                    threads.each {|t| t.join}
                   end
-
-                  EM.stop if name !~ /^em/
-                end # EM.run
+                end
               end # report
 
               puts "   #{test.errs} requests failed" if test.errs > 0
@@ -111,8 +103,6 @@ at_exit do
               puts " --> failed #{ex}"
               puts ex.backtrace if ex.message !~ /requests failed/
             end
-
-
         end # fork
         Process.wait
       end
@@ -124,19 +114,16 @@ at_exit do
     for name, clazz in TESTS do
       print name
       fork do
-        EM.run do
-          test = clazz.new
-          begin
-            test.bench()
-            if test.errs > 0 then
-              raise Exception.new("(#{test.errs} requests failed)")
-            end
-            puts " --> passed "
-          rescue Exception => ex
-            puts " --> failed #{ex}"
-            puts ex.backtrace if ex.message !~ /requests failed/
+        test = clazz.new
+        begin
+          test.bench()
+          if test.errs > 0 then
+            raise Exception.new("(#{test.errs} requests failed)")
           end
-          EM.stop if name !~ /^em/
+          puts " --> passed "
+        rescue Exception => ex
+          puts " --> failed #{ex}"
+          puts ex.backtrace if ex.message !~ /requests failed/
         end
       end # fork
       Process.wait
