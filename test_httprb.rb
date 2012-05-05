@@ -1,6 +1,7 @@
 
 class TestHttpRb < BaseTest
   def initialize
+    super
     require "httprb"
   end
   def bench

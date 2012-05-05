@@ -1,13 +1,14 @@
 
 class TestRigHttp < BaseTest
   def initialize
+    super
     require "righttp"
     @rig_req  = Rig::HTTP.new(
       :host   => URL_HOST,
       :port   => URL_PORT,
       :path   => URL_PATH,
       :method => "GET",
-      :header => { "X-Test" => "test" }
+      :header => @headers
     )
   end
   def bench

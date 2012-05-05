@@ -1,10 +1,9 @@
 
 class TestEmHttp < BaseTest
   def initialize
-    gem "em-http-request"
-    gem "eventmachine"
-    require "em-http-request"
+    super
     require "eventmachine"
+    require "em-http-request"
     @evm_count = ITERATIONS
     @thread = Thread.new { EventMachine.run }
     loop do
@@ -13,7 +12,7 @@ class TestEmHttp < BaseTest
   end
   def bench
     http = EventMachine::HttpRequest.new(URL.to_s).get \
-      :head => {"X-Test" => "test"}, :timeout => 60
+      :head => @headers, :timeout => 60
 
     http.errback { EM.stop; raise Exception.new }
 

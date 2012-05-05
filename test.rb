@@ -37,6 +37,9 @@ def test_http(name, clazz)
 end
 
 class BaseTest
+  def initialize
+    @headers = {"X-Test" => "test"}
+  end
   def verify_response(body)
     if COMMAND == 'verify'
       data = body.is_a?(String) ? MultiJson.load(body) : body
@@ -75,21 +78,26 @@ at_exit do
         fork do
 
           test = clazz.new
+          begin
 
-          x.report("testing #{name}") do
-            outer_loop_iterations.times do
-              if CONCURRENCY == 0
-                test.bench()
-              else
-                threads = []
-                CONCURRENCY.times do
-                  threads << Thread.new do
-                    PER_THREAD.times { block.call  }
+            x.report("testing #{name}") do
+              outer_loop_iterations.times do
+                if CONCURRENCY == 0
+                  test.bench()
+                else
+                  threads = []
+                  CONCURRENCY.times do
+                    threads << Thread.new do
+                      PER_THREAD.times { block.call  }
+                    end
                   end
+                  threads.each {|t| t.join}
                 end
-                threads.each {|t| t.join}
               end
             end
+
+          rescue Exception => ex
+            puts " --> failed #{ex}"
           end
 
         end # fork

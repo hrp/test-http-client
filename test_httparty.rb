@@ -1,10 +1,11 @@
 
 class TestHttparty < BaseTest
   def initialize
+    super
     require "httparty"
   end
   def bench
-    resp = HTTParty.get(URL_STRING, "X-Test" => "test")
+    resp = HTTParty.get(URL_STRING, @headers)
     verify_response(resp.body)
   end
 end

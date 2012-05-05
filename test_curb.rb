@@ -1,6 +1,7 @@
 
 class TestCurb < BaseTest
   def initialize
+    super
     require "curb"
     @c = Curl::Easy.new
     @c.url = URL_STRING
