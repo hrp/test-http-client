@@ -2,6 +2,7 @@
 class TestHttpClient < BaseTest
   def initialize
     super
+    require 'httpclient/webagent-cookie'
     require "httpclient"
     @client = HTTPClient.new
   end

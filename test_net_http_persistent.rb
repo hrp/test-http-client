@@ -4,7 +4,7 @@ class TestNetHttpPersistent < BaseTest
     super
     require "net/http/persistent"
     @client = Net::HTTP::Persistent.new 'test-http-clients'
-    @req = Net::HTTP::Get.new(URL_PATH)
+    @req = Net::HTTP::Get.new(URL_STRING)
     @req.add_field("X-Test", "test")
   end
   def bench

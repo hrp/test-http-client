@@ -3,7 +3,7 @@ class TestNetHttp < BaseTest
   def initialize
     super
     require "net/http"
-    @req = Net::HTTP::Get.new(URL_PATH)
+    @req = Net::HTTP::Get.new(URL_STRING)
     @req.add_field("X-Test", "test")
   end
   def bench

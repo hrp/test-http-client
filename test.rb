@@ -5,6 +5,7 @@ require 'bundler'
 require 'uri'
 require 'benchmark'
 require 'net/http'
+require 'get_process_mem'
 
 require 'oj'
 require 'multi_json'
@@ -74,9 +75,10 @@ at_exit do
     puts "  doing #{total} requests" + ( num_threads > 0 ? " (#{num_threads} threads of #{per_thread} each)" : "" )
 
     Benchmark.bm(28) do |x|
-      for name, clazz in TESTS do
+      for name, clazz in TESTS.shuffle do
         fork do
           clazz.new # make sure files are required early before threading
+          mem = GetProcessMem.new
           begin
             errs = 0
             x.report("testing #{name}") do
@@ -96,7 +98,9 @@ at_exit do
               num_threads.times do
                 t = Thread.new do
                   test = clazz.new
+                  before = mem.mb
                   per_thread.times { test.bench(); }
+                  puts "#{name}: #{mem.mb - before}"
                   errs += test.errs
                 end
                 threads << t
